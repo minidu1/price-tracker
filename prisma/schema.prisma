@@ -11,3 +11,30 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Product {
+  id              String           @id @default(uuid())
+  link            String           @unique
+  name            String
+  description     String?
+  picture         String?
+  trackedProducts TrackedProduct[]
+  priceHistory    PriceHistory[]
+}
+
+model TrackedProduct {
+  id        String  @id @default(uuid())
+  uid       String
+  productId String
+  target    Float
+  notified  Boolean
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model PriceHistory {
+  id        String   @id @default(uuid())
+  productId String
+  date      DateTime
+  price     Float
+  product   Product  @relation(fields: [productId], references: [id])
+}
