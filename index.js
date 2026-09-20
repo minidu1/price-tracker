@@ -1,24 +1,53 @@
-const express = require('express');
-const app = express();
-const PORT = 3000;
+import "dotenv/config";
+import express from "express";
+import { PrismaClient } from "./generated/prisma/client.js";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-app.use(express.json()); // lets Express understand JSON sent in requests
-let products = []; // temporary in-memory "database"
-
-
-app.get('/', (req, res) => {
-  res.send('Server is running');
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
 });
 
-app.post('/products', (req, res) => {
-  const { name, url } = req.body;
-  const newProduct = { id: products.length + 1, name, url, price: null };
-  products.push(newProduct);
+const prisma = new PrismaClient({ adapter });
+
+const app = express();
+
+const PORT = 3000;
+
+
+app.use(express.json()); // lets Express understand JSON sent in requests
+
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
+app.post("/products", async (req, res) => {
+  const { uid, link, name, target } = req.body;
+
+  const newProduct = await prisma.trackedProduct.create({
+    data: {
+      uid,
+      target,
+      notified: false,
+      product : {
+        connectOrCreate: {
+          where: {link},
+          create: {link, name}
+        }
+      }
+    }
+  })
+
   res.status(201).json(newProduct);
 });
 
-app.get('/products', (req, res) => {
-  res.json(products);
+app.get("/tracked-products", async(req, res) => {
+  
+  const products = await prisma.trackedProduct.findMany(
+    {include:{
+      product: true
+    } }
+  )
+  res.status(200).json(products)
 });
 
 app.listen(PORT, () => {
