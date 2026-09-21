@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import { PrismaClient } from "./generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
+import axios from "axios";
+import * as Cheerio from "cheerio";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -12,6 +14,19 @@ const prisma = new PrismaClient({ adapter });
 const app = express();
 
 const PORT = 3000;
+
+async function scrapePrice(url) {
+  const { data: html } = await axios.get(url);
+  console.log(html.includes('pdp-price_type_normal'));
+  const $ = Cheerio.load(html);
+  const priceText = $(".pdp-price_type_normal").text();
+  console.log("priceText ran")
+  return priceText
+}
+
+const url = "https://www.daraz.lk/products/inpods-pro-air-13-pods-i127743453-s1044998823.html?scm=1007.51610.379274.0&pvid=d22d4f68-daaf-4cb6-9860-6962d17d7860&search=flashsale&spm=a2a0e.tm80335410.FlashSale.d_127743453"
+const price = await scrapePrice(url)
+console.log(price)
 
 
 app.use(express.json()); // lets Express understand JSON sent in requests
@@ -28,26 +43,25 @@ app.post("/products", async (req, res) => {
       uid,
       target,
       notified: false,
-      product : {
+      product: {
         connectOrCreate: {
-          where: {link},
-          create: {link, name}
-        }
-      }
-    }
-  })
+          where: { link },
+          create: { link, name },
+        },
+      },
+    },
+  });
 
   res.status(201).json(newProduct);
 });
 
-app.get("/tracked-products", async(req, res) => {
-  
-  const products = await prisma.trackedProduct.findMany(
-    {include:{
-      product: true
-    } }
-  )
-  res.status(200).json(products)
+app.get("/tracked-products", async (req, res) => {
+  const products = await prisma.trackedProduct.findMany({
+    include: {
+      product: true,
+    },
+  });
+  res.status(200).json(products);
 });
 
 app.listen(PORT, () => {
