@@ -21,20 +21,37 @@ async function scrapePrice(url) {
   });
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector('.pdp-price_type_normal', { timeout: 10000 })
+  await page.waitForSelector(".pdp-price_type_normal", { timeout: 10000 });
   const priceText = await page.$eval(
     ".pdp-price_type_normal",
     (el) => el.textContent,
   );
   await browser.close; //close the browser
-  return priceText;
+  const numericPrice = parseFloat(priceText.match(/\d+(?:\.\d+)?/)?.[0]);
+  return numericPrice;
 }
 
-const url =
-  "https://www.daraz.lk/products/inpods-pro-air-13-pods-i127743453-s1044998823.html?scm=1007.51610.379274.0&pvid=d22d4f68-daaf-4cb6-9860-6962d17d7860&search=flashsale&spm=a2a0e.tm80335410.FlashSale.d_127743453";
-const price = await scrapePrice(url);
-console.log(price);
+async function checkAllProducts() {
+  const productLinks = await prisma.product.findMany({
+    select: {
+      link: true,
+    },
+  });
 
+  for (const product of productLinks) {
+    try {
+      const price = await scrapePrice(product.link);
+      console.log(price);
+    } catch (err) {
+      console.log("Failed to fetch the price:", err.message);
+    }
+  }
+
+  return;
+}
+const products = await checkAllProducts();
+
+// endpoint calls
 app.use(express.json()); // lets Express understand JSON sent in requests
 
 app.get("/", (req, res) => {
