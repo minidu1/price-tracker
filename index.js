@@ -3,21 +3,38 @@ import express from "express";
 import { PrismaClient } from "./generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import puppeteer from "puppeteer";
+import cron from "node-cron";
+import { Resend } from "resend";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
 });
 
 const prisma = new PrismaClient({ adapter });
-
 const app = express();
-
 const PORT = 3000;
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+async function sendNotification(email, productName, price, target) {
+  const { error } = await resend.emails.send({
+    from: "onboarding@resend.dev", // Resend's default test sender, works without domain verification
+    to: email,
+    subject: `Price drop: ${productName}`,
+    text: `${productName} dropped to ${price}, at or below your target of ${target}!`,
+  });
+
+  if (error) {
+    console.log(`Failed to send email to ${email}:`, error.message);
+    return false;
+  }
+  return true;
+}
 
 async function scrapePrice(url) {
   const browser = await puppeteer.launch({
-    executablePath: process.env.CHROME_PATH
-    });
+    executablePath: process.env.CHROME_PATH,
+  });
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await page.waitForSelector(".pdp-price_type_normal", { timeout: 10000 });
@@ -40,20 +57,45 @@ async function savePriceHistory(productId, price) {
   });
 }
 
+async function updateNotifiedInDatabase(emailSend, targetId) {
+  if (emailSend) {
+    await prisma.trackedProduct.update({
+      where: { id: targetId },
+      data: { notified: true },
+    });
+    console.log("notified");
+
+    return;
+  } else {
+    console.log("not sended");
+    return false;
+  }
+}
+
 async function comparePriceWithTarget(productId, price) {
-  const targetPrices = await prisma.trackedProduct.findMany({
+  const targets = await prisma.trackedProduct.findMany({
     where: { productId, notified: false },
-    select: { target: true, uid: true },
+    select: {
+      target: true,
+      id: true,
+      product: {
+        select: { name: true },
+      },
+    },
   });
 
-  for (const targetPrice of targetPrices) {
-    if (price <= targetPrice.target){
-      console.log("price is",price, "target is", targetPrice.target);
-      
-    }
-    else{
-      console.log(`price is ${price} but target is ${targetPrice.target}`);
-      
+  for (const target of targets) {
+    if (price <= target.target) {
+      const email = process.env.TEST_EMAIL;
+      const emailSend = await sendNotification(
+        email,
+        target.product.name,
+        price,
+        target.target,
+      );
+      await updateNotifiedInDatabase(emailSend, target.id);
+    } else {
+      console.log(`price is ${price} but target is ${target.target}`);
     }
   }
 }
@@ -68,8 +110,9 @@ async function checkAllProducts() {
 
   for (const product of products) {
     try {
+      // const price = 999;
       const price = await scrapePrice(product.link);
-      // await savePriceHistory(product.id, price);
+      await savePriceHistory(product.id, price);
       await comparePriceWithTarget(product.id, price);
     } catch (err) {
       console.log(`Failed processing ${product.link}:`, err.message);
@@ -78,7 +121,18 @@ async function checkAllProducts() {
 
   return;
 }
-await checkAllProducts();
+
+cron.schedule("0 9 * * *", async () => {
+  await checkAllProducts();
+});
+
+// cron.schedule("* * * * *", () => {
+//   console.log("cron ran");
+
+//   checkAllProducts();
+// });
+
+// await checkAllProducts();
 
 // endpoint calls
 app.use(express.json()); // lets Express understand JSON sent in requests
