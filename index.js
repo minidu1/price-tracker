@@ -144,20 +144,43 @@ app.get("/", (req, res) => {
 
 app.post("/users", async (req, res) => {
   try {
-    const {name,email,password} = req.body
+    const { name, email, password } = req.body;
     const passwordHash = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
-      data:{
+      data: {
         name,
         email,
-        passwordHash
-      }
-    })
-    res.status(201).json(newUser)
+        passwordHash,
+      },
+    });
+    return res.status(201).json(newUser);
   } catch (error) {
-    console.log(error)
-    res.status(500).send();
+    console.log(error);
+    return res.status(500).json({message: "signup failed"});
+  }
+});
+
+app.post("/users/login", async (req, res) => {
+  const password = req.body.password
+  const user = await prisma.user.findUnique({
+    where: {
+      email: req.body.email,
+    },
+  });
+  if (!user) {
+    return res.status(401).json({ message: `invalid email or password` });
+  }
+  try {
+    if (await bcrypt.compare(password, user.passwordHash)){
+      console.log(user)
+      return res.status(200).json({message: "login success"})
+    }
+    else{
+      return res.status(401).json({ message: `invalid email or password` });
+    }
+  } catch  {
+    return res.status(401).json({ message: `invalid email or password` });
   }
 });
 
@@ -182,15 +205,16 @@ app.post("/products", async (req, res) => {
   res.status(201).json(newProduct);
 });
 
-app.get("/tracked-products", async (req, res) => {
-  const products = await prisma.trackedProduct.findMany({
-    include: {
-      product: true,
-    },
-  });
-  res.status(200).json(products);
-});
+// app.get("/tracked-products", async (req, res) => {
+//   const products = await prisma.trackedProduct.findMany({
+//     include: {
+//       product: true,
+//     },
+//   });
+//   res.status(200).json(products);
+// });
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
+
