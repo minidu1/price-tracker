@@ -5,8 +5,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 import { Resend } from "resend";
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -127,11 +127,11 @@ async function checkAllProducts() {
 //   await checkAllProducts();
 // });
 
-cron.schedule("* * * * *", async () => {
-  console.log("cron ran");
+// cron.schedule("* * * * *", async () => {
+//   console.log("cron ran");
 
-  checkAllProducts();
-});
+//   checkAllProducts();
+// });
 
 // await checkAllProducts();
 
@@ -140,6 +140,25 @@ app.use(express.json()); // lets Express understand JSON sent in requests
 
 app.get("/", (req, res) => {
   res.send("Server is running");
+});
+
+app.post("/users", async (req, res) => {
+  try {
+    const {name,email,password} = req.body
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const newUser = await prisma.user.create({
+      data:{
+        name,
+        email,
+        passwordHash
+      }
+    })
+    res.status(201).json(newUser)
+  } catch (error) {
+    console.log(error)
+    res.status(500).send();
+  }
 });
 
 app.post("/products", async (req, res) => {
