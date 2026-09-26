@@ -29,6 +29,7 @@ model TrackedProduct {
   target    Float
   notified  Boolean
   product   Product @relation(fields: [productId], references: [id])
+  user      User   @relation(fields: [uid], references: [id])
 }
 
 model PriceHistory {
@@ -37,4 +38,12 @@ model PriceHistory {
   date      DateTime
   price     Float
   product   Product  @relation(fields: [productId], references: [id])
+}
+
+model User {
+  id              String           @id @default(uuid())
+  name            String
+  passwordHash        String
+  email           String @unique
+  trackedProducts TrackedProduct[]
 }

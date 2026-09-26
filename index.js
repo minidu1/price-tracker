@@ -5,6 +5,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 import { Resend } from "resend";
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -64,8 +66,7 @@ async function updateNotifiedInDatabase(emailSend, targetId) {
       data: { notified: true },
     });
     console.log("notified");
-
-    return;
+    return true;
   } else {
     console.log("not sended");
     return false;
@@ -122,15 +123,15 @@ async function checkAllProducts() {
   return;
 }
 
-cron.schedule("0 9 * * *", async () => {
-  await checkAllProducts();
-});
-
-// cron.schedule("* * * * *", () => {
-//   console.log("cron ran");
-
-//   checkAllProducts();
+// cron.schedule("0 9 * * *", async () => {
+//   await checkAllProducts();
 // });
+
+cron.schedule("* * * * *", async () => {
+  console.log("cron ran");
+
+  checkAllProducts();
+});
 
 // await checkAllProducts();
 
