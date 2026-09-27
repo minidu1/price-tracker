@@ -19,3 +19,6 @@ Content-Type: application/json
     "email":"test@test.com",
     "password": "password"
 }
+###
+GET http://localhost:3000/tracked-products
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mzg4OGQ3Zi03YmRmLTQyNjMtYmRiMS01ZWEzYzYwZGZjZDUiLCJpYXQiOjE3OTA1MjgyNzIsImV4cCI6MTc5MTEzMzA3Mn0.ye58ZNPB0pmJ0Y5-PwidGF7IsJ96mq3XrnMxM3EkTPM

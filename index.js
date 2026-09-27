@@ -157,12 +157,12 @@ app.post("/users", async (req, res) => {
     return res.status(201).json(newUser);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({message: "signup failed"});
+    return res.status(500).json({ message: "signup failed" });
   }
 });
 
 app.post("/users/login", async (req, res) => {
-  const password = req.body.password
+  const password = req.body.password;
   const user = await prisma.user.findUnique({
     where: {
       email: req.body.email,
@@ -172,17 +172,33 @@ app.post("/users/login", async (req, res) => {
     return res.status(401).json({ message: `invalid email or password` });
   }
   try {
-    if (await bcrypt.compare(password, user.passwordHash)){
-      console.log(user)
-      return res.status(200).json({message: "login success"})
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (isValid) {
+      console.log(user);
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      return res.status(200).json({ message: "Login success", token });
+    } else {
+      return res.status(401).json({ message: `Invalid email or password` });
     }
-    else{
-      return res.status(401).json({ message: `invalid email or password` });
-    }
-  } catch  {
-    return res.status(401).json({ message: `invalid email or password` });
+  } catch {
+    return res.status(401).json({ message: `Invalid email or password` });
   }
 });
+
+function authenticateToken(req,res,next){
+  const authHeader = req.headers["authorization"]
+  const token = authHeader && authHeader.split(" ")[1]
+  if (!token) return res.status(401).json({message: "Authentication token is missiong"})
+
+  jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
+    if(error) return res.status(403).json({message: "Invalid or expired authentication toke"})
+
+    req.user = user
+    next()
+  })
+}
 
 app.post("/products", async (req, res) => {
   // *** need to validate parsing data *** //
@@ -205,16 +221,15 @@ app.post("/products", async (req, res) => {
   res.status(201).json(newProduct);
 });
 
-// app.get("/tracked-products", async (req, res) => {
-//   const products = await prisma.trackedProduct.findMany({
-//     include: {
-//       product: true,
-//     },
-//   });
-//   res.status(200).json(products);
-// });
+app.get("/tracked-products", authenticateToken, async (req, res) => {
+  const products = await prisma.trackedProduct.findMany({
+    where: {
+      uid: req.user.userId
+    },
+  });
+  res.status(200).json(products);
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
-
