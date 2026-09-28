@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:3000/users/login
+POST http://localhost:4000/users/login
 Content-Type: application/json
 
 {
@@ -21,4 +21,4 @@ Content-Type: application/json
 }
 ###
 GET http://localhost:3000/tracked-products
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mzg4OGQ3Zi03YmRmLTQyNjMtYmRiMS01ZWEzYzYwZGZjZDUiLCJpYXQiOjE3OTA1MjgyNzIsImV4cCI6MTc5MTEzMzA3Mn0.ye58ZNPB0pmJ0Y5-PwidGF7IsJ96mq3XrnMxM3EkTPM
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mzg4OGQ3Zi03YmRmLTQyNjMtYmRiMS01ZWEzYzYwZGZjZDUiLCJpYXQiOjE3OTA1ODM2MjAsImV4cCI6MTc5MTE4ODQyMH0.dJGzJBGaT3KCdF0p9LKHd27pN9u6jzkUB8vPC29yK7M

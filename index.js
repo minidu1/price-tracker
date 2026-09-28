@@ -161,48 +161,53 @@ app.post("/users", async (req, res) => {
   }
 });
 
-app.post("/users/login", async (req, res) => {
-  const password = req.body.password;
-  const user = await prisma.user.findUnique({
-    where: {
-      email: req.body.email,
-    },
-  });
-  if (!user) {
-    return res.status(401).json({ message: `invalid email or password` });
-  }
-  try {
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (isValid) {
-      console.log(user);
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      return res.status(200).json({ message: "Login success", token });
-    } else {
-      return res.status(401).json({ message: `Invalid email or password` });
-    }
-  } catch {
-    return res.status(401).json({ message: `Invalid email or password` });
-  }
-});
+// app.post("/users/login", async (req, res) => {
+//   const password = req.body.password;
+//   const user = await prisma.user.findUnique({
+//     where: {
+//       email: req.body.email,
+//     },
+//   });
+//   if (!user) {
+//     return res.status(401).json({ message: `Invalid email or password` });
+//   }
+//   try {
+//     const isValid = await bcrypt.compare(password, user.passwordHash);
+//     if (isValid) {
+//       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+//         expiresIn: "7d",
+//       });
+//       return res.status(200).json({ message: "Login success", token });
+//     } else {
+//       return res.status(401).json({ message: `Invalid email or password` });
+//     }
+//   } catch {
+//     return res.status(401).json({ message: `Invalid email or password` });
+//   }
+// });
 
-function authenticateToken(req,res,next){
-  const authHeader = req.headers["authorization"]
-  const token = authHeader && authHeader.split(" ")[1]
-  if (!token) return res.status(401).json({message: "Authentication token is missiong"})
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Authentication token is missing" });
+  }
 
   jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
-    if(error) return res.status(403).json({message: "Invalid or expired authentication toke"})
+    if (error) {
+      return res
+        .status(403)
+        .json({ message: "Invalid or expired authentication toke" });
+    }
 
-    req.user = user
-    next()
-  })
+    req.user = user;
+    next();
+  });
 }
 
-app.post("/products", async (req, res) => {
-  // *** need to validate parsing data *** //
-  const { uid, link, name, target } = req.body;
+app.post("/products", authenticateToken, async (req, res) => {
+  const { link, name, target } = req.body;
+  const uid = req.user.userId;
 
   const newProduct = await prisma.trackedProduct.create({
     data: {
@@ -224,7 +229,10 @@ app.post("/products", async (req, res) => {
 app.get("/tracked-products", authenticateToken, async (req, res) => {
   const products = await prisma.trackedProduct.findMany({
     where: {
-      uid: req.user.userId
+      uid: req.user.userId,
+    },
+    include: {
+      product: true,
     },
   });
   res.status(200).json(products);
