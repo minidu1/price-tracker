@@ -7,6 +7,8 @@ import cron from "node-cron";
 import { Resend } from "resend";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { body, checkSchema, matchedData, validationResult } from "express-validator";
+import { createUserValidation } from "./validationSchemas.js";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -82,12 +84,16 @@ async function comparePriceWithTarget(productId, price) {
       product: {
         select: { name: true },
       },
+      user: {
+        select: { email: true },
+      },
     },
   });
 
   for (const target of targets) {
     if (price <= target.target) {
-      const email = process.env.TEST_EMAIL;
+      const email = target.user.email;
+      console.log(email);
       const emailSend = await sendNotification(
         email,
         target.product.name,
@@ -102,6 +108,7 @@ async function comparePriceWithTarget(productId, price) {
 }
 
 async function checkAllProducts() {
+  //select the link and id of the product to check current price
   const products = await prisma.product.findMany({
     select: {
       link: true,
@@ -142,9 +149,16 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-app.post("/users", async (req, res) => {
+app.post("/users",checkSchema(createUserValidation), async (req, res) => {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(result)
+  }
+
   try {
-    const { name, email, password } = req.body;
+    const data = matchedData(req)
+    console.log(data)
+    const { name, email, password } = data;
     const passwordHash = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
