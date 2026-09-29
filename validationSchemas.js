@@ -5,7 +5,7 @@ export const createUserValidation = {
     },
     trim: true,
     notEmpty: {
-      errorMessage: "Name must not be empty",
+      errorMessage: "Name is requiredy",
     },
     isLength: {
       options: {
@@ -17,22 +17,73 @@ export const createUserValidation = {
     },
     escape: true,
   },
-  password:{
-    trim:true,
-    notEmpty:{
-      errorMessage: "Password must not be empty"
+  password: {
+    trim: true,
+    notEmpty: {
+      errorMessage: "Password is required",
     },
-    isLength:{
-      options:{
-        min:6
+    isLength: {
+      options: {
+        min: 6,
       },
-      errorMessage:"Password must be at least 6 characters"
+      errorMessage: "Password must be at least 6 characters",
     },
   },
-  email:{
-    trim:true,
-    isEmail:{
-      errorMessage: "Must be a valid e-mail address"
-    }
-  }
+  email: {
+    trim: true,
+    notEmpty: {
+      errorMessage: "E-mail is required",
+    },
+    isEmail: {
+      errorMessage: "Must be a valid e-mail address",
+    },
+  },
+};
+
+export const loginValidation = {
+  password: {
+    trim: true,
+    notEmpty: {
+      errorMessage: "Password is required",
+    },
+    isLength: {
+      options: {
+        min: 6,
+      },
+      errorMessage: "Password must be at least 6 characters",
+    },
+  },
+  email: {
+    trim: true,
+    notEmpty: {
+      errorMessage: "E-mail is required",
+    },
+    isEmail: {
+      errorMessage: "Must be a valid e-mail address",
+    },
+  },
+};
+
+export const addNewProductValidation = {
+  link: {
+    trim: true,
+    notEmpty: {
+      errorMessage: "URL is required",
+    },
+    isURL: {
+      errorMessage: "Please enter a valid url",
+    },
+    
+  },
+  target: {
+    notEmpty: {
+      errorMessage: "Target is required",
+    },
+    isFloat: {
+      errorMessage: "Target must be a number",
+      options: {
+        min: 0,
+      },
+    },
+  },
 };

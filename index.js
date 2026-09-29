@@ -7,8 +7,8 @@ import cron from "node-cron";
 import { Resend } from "resend";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { body, checkSchema, matchedData, validationResult } from "express-validator";
-import { createUserValidation } from "./validationSchemas.js";
+import {checkSchema, matchedData, validationResult } from "express-validator";
+import { addNewProductValidation, createUserValidation } from "./validationSchemas.js";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -219,10 +219,19 @@ function authenticateToken(req, res, next) {
   });
 }
 
-app.post("/products", authenticateToken, async (req, res) => {
-  const { link, name, target } = req.body;
-  const uid = req.user.userId;
+app.post("/products", authenticateToken, checkSchema(addNewProductValidation), async (req, res) => {
+  
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).json(result)
+  }
 
+  try {
+    const data = matchedData(req)
+  const { link,target } = data;
+  //name must be scrape from product
+  const uid = req.user.userId;
+    const name = "test name"
   const newProduct = await prisma.trackedProduct.create({
     data: {
       uid,
@@ -237,7 +246,11 @@ app.post("/products", authenticateToken, async (req, res) => {
     },
   });
 
-  res.status(201).json(newProduct);
+  return res.status(201).json(newProduct);
+  } catch (error) {
+   return res.status(500).json({error: error}) 
+  }
+  
 });
 
 app.get("/tracked-products", authenticateToken, async (req, res) => {
