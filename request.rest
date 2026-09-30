@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:4000/users/login
+POST http://localhost:3000/users/login
 Content-Type: application/json
 
 {
@@ -20,5 +20,15 @@ Content-Type: application/json
     "password": "password"
 }
 ###
-GET http://localhost:3000/tracked-products
+GET http://localhost:3000/products/tracked-products
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mzg4OGQ3Zi03YmRmLTQyNjMtYmRiMS01ZWEzYzYwZGZjZDUiLCJpYXQiOjE3OTA2OTQ5MjcsImV4cCI6MTc5MTI5OTcyN30.tgbm_ZfTo3Gf1jiu9hxGFziMRkaMzIq5sSYfipuQdoc
+
+###
+POST http://localhost:3000/products
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mzg4OGQ3Zi03YmRmLTQyNjMtYmRiMS01ZWEzYzYwZGZjZDUiLCJpYXQiOjE3OTA2OTQ5MjcsImV4cCI6MTc5MTI5OTcyN30.tgbm_ZfTo3Gf1jiu9hxGFziMRkaMzIq5sSYfipuQdoc
+Content-Type: application/json
+
+{
+    "link": "https://www.daraz.lk/products/nokia-105-dual-sim-4th-edition-with-warranty-feature-push-button-phone-177-display-battery-long-standby-flashlight-radio-i193264976-s12880087396.html?scm=1007.51610.379274.0&pvid=a11be85a-75b2-4c24-8faf-03206d728a8a&search=flashsale&spm=a2a0e.tm80335410.FlashSale.d_193264976",
+    "target": 4000
+}
