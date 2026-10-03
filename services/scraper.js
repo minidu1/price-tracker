@@ -5,7 +5,7 @@ import puppeteer from "puppeteer";
 const url =
   "https://www.daraz.lk/products/soundcore-r60i-nc-by-anker-wireless-earbuds-bluetooth-61-real-time-adaptive-anc-hi-res-sound-ai-translation-ip55-i1755368712-s12896105897.html?scm=1007.51610.379274.0&pvid=4cbebe76-3714-489e-8b7f-26b0e013d54d&search=flashsale&spm=a2a0e.tm80335410.FlashSale.d_1755368712";
 
-async function scrapeData(url) {
+export async function scrapeData(url) {
   let browser;
   try {
     browser = await puppeteer.launch({
@@ -21,14 +21,18 @@ async function scrapeData(url) {
     const description = await scrapeProductDescription(page);
     const imgUrl = await scrapeProductImgUrl(page);
 
-    await browser.close(); //close the browser
     return { price, name, description, imgUrl }; // return scraped data
   } catch (error) {
-    console.log(error);
-    return "Scraping error";
+    console.log("scrape failed",error);
+    return {
+      price: null,
+      name: null,
+      description: [],
+      imgUrl: null,
+      error: true,
+    };
   } finally {
     if (browser) {
-      console.log("browser closing");
       await browser.close();
     }
   }
@@ -65,12 +69,26 @@ async function scrapeProductName(page) {
 
 async function scrapeProductDescription(page) {
   try {
-    await page.waitForSelector(".lzd-article li span", {
-      timeout: 10000,
+    //find script that contains "highlight" word
+    const script = await page.evaluate(() => {
+      return [...document.scripts]
+        .map((script) => script.textContent)
+        .find((text) => text.includes('"highlights"'));
     });
-    const description = await page.$$eval(".lzd-article li span", (spans) =>
-      spans.map((span) => span.textContent.trim()),
-    );
+
+    const match = script.match(/"highlights":"(.*?)","/);
+
+    const highlights = match[1];
+
+    const description = await page.evaluate((html) => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html"); //parse that string into html
+
+      return [...doc.querySelectorAll("li span")].map((span) =>
+        span.textContent.replace(/\\n/g, "").trim(),
+      );
+    }, highlights);
+
     return description;
   } catch (error) {
     console.log("Description scrape failed:", error);
