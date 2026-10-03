@@ -1,4 +1,4 @@
-import { prisma } from "../prisma.js";
+import { prisma } from "../prismaClient.js";
 import { scrapePrice } from "./scraper.js";
 import { updateNotifiedInDatabase, sendNotification } from "./notifier.js";
 

@@ -16,7 +16,7 @@ model Product {
   id              String           @id @default(uuid())
   link            String           @unique
   name            String
-  description     String?
+  description     String[]
   picture         String?
   trackedProducts TrackedProduct[]
   priceHistory    PriceHistory[]

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { prisma } from "../prisma.js";
+import { prisma } from "../prismaClient.js";
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 

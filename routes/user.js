@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Router } from "express";
-import { prisma } from "../prisma.js";
+import { prisma } from "../prismaClient.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { checkSchema, validationResult, matchedData } from "express-validator";

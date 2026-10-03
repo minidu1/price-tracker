@@ -2,12 +2,12 @@ import { Router } from "express";
 import { checkSchema, validationResult, matchedData } from "express-validator";
 import { authenticateToken } from "../middleware/auth.js";
 import { addNewProductValidation } from "../validation/schemas.js";
-import { prisma } from "../prisma.js";
+import { prisma } from "../prismaClient.js";
 
 const router = Router();
 
 router.post(
-  "/products",
+  "/",
   authenticateToken,
   checkSchema(addNewProductValidation),
   async (req, res) => {
