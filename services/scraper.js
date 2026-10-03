@@ -1,27 +1,26 @@
 import "dotenv/config";
 import puppeteer from "puppeteer";
 
-//test data
-const url =
-  "https://www.daraz.lk/products/soundcore-r60i-nc-by-anker-wireless-earbuds-bluetooth-61-real-time-adaptive-anc-hi-res-sound-ai-translation-ip55-i1755368712-s12896105897.html?scm=1007.51610.379274.0&pvid=4cbebe76-3714-489e-8b7f-26b0e013d54d&search=flashsale&spm=a2a0e.tm80335410.FlashSale.d_1755368712";
+// //test data
+// const url =
+//   "https://www.daraz.lk/products/soundcore-r60i-nc-by-anker-wireless-earbuds-bluetooth-61-real-time-adaptive-anc-hi-res-sound-ai-translation-ip55-i1755368712-s12896105897.html?scm=1007.51610.379274.0&pvid=4cbebe76-3714-489e-8b7f-26b0e013d54d&search=flashsale&spm=a2a0e.tm80335410.FlashSale.d_1755368712";
 
 export async function scrapeData(url) {
   let browser;
   try {
     browser = await puppeteer.launch({
-      // executablePath: process.env.CHROME_PATH,
-      executablePath:
-        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      executablePath: process.env.CHROME_PATH,
+      // executablePath:
+      //   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
     });
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded" });
 
-    const price = await scrapePrice(page);
     const name = await scrapeProductName(page);
     const description = await scrapeProductDescription(page);
     const imgUrl = await scrapeProductImgUrl(page);
 
-    return { price, name, description, imgUrl }; // return scraped data
+    return { name, description, imgUrl }; // return scraped data
   } catch (error) {
     console.log("scrape failed",error);
     return {
@@ -69,7 +68,7 @@ async function scrapeProductName(page) {
 
 async function scrapeProductDescription(page) {
   try {
-    //find script that contains "highlight" word
+    //find script that contains "highlights" word
     const script = await page.evaluate(() => {
       return [...document.scripts]
         .map((script) => script.textContent)
@@ -116,5 +115,5 @@ async function scrapeProductImgUrl(page) {
   }
 }
 
-const test = await scrapeData(url);
-console.log(test);
+// const test = await scrapeData(url);
+// console.log(test);
