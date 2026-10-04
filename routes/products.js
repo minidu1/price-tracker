@@ -3,9 +3,13 @@ import { checkSchema, validationResult, matchedData } from "express-validator";
 import { authenticateToken } from "../middleware/auth.js";
 import { addNewProductValidation } from "../validation/schemas.js";
 import { prisma } from "../prismaClient.js";
-import { createOrGetProduct } from "../repositories/productRepo.js";
+import { ensureProductExist } from "../repositories/productRepo.js";
 import { addToTrackedProduct } from "../repositories/trackedProductRepo.js";
-import { scrapePrice } from "../services/scraper.js";
+import {
+  launchBrowser,
+  openNewWebPage,
+  scrapePrice,
+} from "../services/scraper.js";
 import { savePriceHistory } from "../services/priceChecker.js";
 
 // product ekak add unama eeka ewelma tracked price run wenn onede? user ta producr eka blaganna
@@ -21,18 +25,23 @@ router.post(
     if (!result.isEmpty()) {
       return res.status(400).json(result);
     }
+
+    let browser;
     try {
       const data = matchedData(req);
       const { link, target } = data;
       const uid = req.user.userId;
 
-      await createOrGetProduct(link);
+      browser = await launchBrowser();
+      const page = await openNewWebPage(browser, link);
+
+      await ensureProductExist(link, page); // check if product already in db if not create that product
       const product = await addToTrackedProduct(link, target, uid);
 
       //add the current price to db to show the price to user
       let price = null;
       try {
-        price = await scrapePrice(link);
+        price = await scrapePrice(page);
         await savePriceHistory(product.productId, price);
       } catch (error) {
         console.log(
@@ -49,6 +58,8 @@ router.post(
         });
       }
       return res.status(500).json({ message: "Failed to add product" });
+    } finally {
+      if (browser) await browser.close();
     }
   },
 );
