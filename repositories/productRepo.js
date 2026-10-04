@@ -8,7 +8,11 @@ export async function createOrGetProduct(link) {
 
   if (existing) return existing;
 
-  const { name, description, imgUrl } = await scrapeData(link);
+  const scraped = await scrapeData(link);
+  if (scraped.error) {
+    throw new Error("SCRAPE_FAILED");
+  }
+  const { name, description, imgUrl } = scraped;
 
   try {
     return await prisma.product.create({

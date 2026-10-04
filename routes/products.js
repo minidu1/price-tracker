@@ -6,6 +6,8 @@ import { prisma } from "../prismaClient.js";
 import { createOrGetProduct } from "../repositories/productRepo.js";
 import { addToTrackedProduct } from "../repositories/trackedProductRepo.js";
 
+// product ekak add unama eeka ewelma tracked price run wenn onede? user ta producr eka blaganna
+
 const router = Router();
 
 router.post(
@@ -23,11 +25,16 @@ router.post(
       //name must be scrape from product
       const uid = req.user.userId;
 
-      await createOrGetProduct(link)
+      await createOrGetProduct(link);
       await addToTrackedProduct(link, target, uid);
       return res.status(201).json({ message: "Product added" });
     } catch (error) {
       console.log(error);
+      if (error.message === "SCRAPE_FAILED") {
+        return res.status(422).json({
+          message: "Couldn't retrieve product details, please try again",
+        });
+      }
       return res.status(500).json({ message: "Failed to add product" });
     }
   },
