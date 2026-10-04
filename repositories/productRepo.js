@@ -15,7 +15,7 @@ export async function createOrGetProduct(link) {
   const { name, description, imgUrl } = scraped;
 
   try {
-    return await prisma.product.create({
+    await prisma.product.create({
       data: {
         link,
         name,

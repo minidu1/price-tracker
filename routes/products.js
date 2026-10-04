@@ -5,6 +5,8 @@ import { addNewProductValidation } from "../validation/schemas.js";
 import { prisma } from "../prismaClient.js";
 import { createOrGetProduct } from "../repositories/productRepo.js";
 import { addToTrackedProduct } from "../repositories/trackedProductRepo.js";
+import { scrapePrice } from "../services/scraper.js";
+import { savePriceHistory } from "../services/priceChecker.js";
 
 // product ekak add unama eeka ewelma tracked price run wenn onede? user ta producr eka blaganna
 
@@ -22,12 +24,23 @@ router.post(
     try {
       const data = matchedData(req);
       const { link, target } = data;
-      //name must be scrape from product
       const uid = req.user.userId;
 
       await createOrGetProduct(link);
-      await addToTrackedProduct(link, target, uid);
-      return res.status(201).json({ message: "Product added" });
+      const product = await addToTrackedProduct(link, target, uid);
+
+      //add the current price to db to show the price to user
+      let price = null;
+      try {
+        price = await scrapePrice(link);
+        await savePriceHistory(product.productId, price);
+      } catch (error) {
+        console.log(
+          "Initial price scrape failed, will retry on next scheduled check:",
+          error.message,
+        );
+      }
+      return res.status(201).json({ message: "Product added", price: price });
     } catch (error) {
       console.log(error);
       if (error.message === "SCRAPE_FAILED") {

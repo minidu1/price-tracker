@@ -40,23 +40,31 @@ export async function scrapeData(url) {
     };
   } finally {
     if (browser) {
+      console.log("browser closed");
       await browser.close();
     }
   }
 }
 
 export async function scrapePrice(url) {
-  const { page, browser } = await launchBrowser(url);
-  await page.waitForSelector(".pdp-price_type_normal", { timeout: 10000 });
-  const priceText = await page.$eval(
-    ".pdp-price_type_normal",
-    (el) => el.textContent,
-  );
-  const numericPrice = parseFloat(
-    priceText.match(/\d+(?:,\d{3})*(?:\.\d+)?/)?.[0].replace(/,/g, ""),
-  );
-  await browser.close();
-  return numericPrice;
+  let browser;
+  try {
+    const result = await launchBrowser(url);
+    const page = result.page;
+    browser = result.browser;
+    await page.waitForSelector(".pdp-price_type_normal", { timeout: 10000 });
+    const priceText = await page.$eval(
+      ".pdp-price_type_normal",
+      (el) => el.textContent,
+    );
+    const numericPrice = parseFloat(
+      priceText.match(/\d+(?:,\d{3})*(?:\.\d+)?/)?.[0].replace(/,/g, ""),
+    );
+    return numericPrice;
+  } finally {
+    console.log("browser closed");
+    await browser.close();
+  }
 }
 
 async function scrapeProductName(page) {

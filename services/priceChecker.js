@@ -57,7 +57,7 @@ async function comparePriceWithTarget(productId, price) {
   }
 }
 
-async function savePriceHistory(productId, price) {
+export async function savePriceHistory(productId, price) {
   await prisma.priceHistory.create({
     data: {
       productId,
