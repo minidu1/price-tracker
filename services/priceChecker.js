@@ -1,5 +1,5 @@
 import { prisma } from "../prismaClient.js";
-import { scrapePrice } from "./scraper.js";
+import { launchBrowser, openNewWebPage, scrapePrice } from "./scraper.js";
 import { updateNotifiedInDatabase, sendNotification } from "./notifier.js";
 
 export async function checkAllProducts() {
@@ -11,18 +11,26 @@ export async function checkAllProducts() {
     },
   });
 
-  for (const product of products) {
-    try {
-      // const price = 999;
-      const price = await scrapePrice(product.link);
-      await savePriceHistory(product.id, price);
-      await comparePriceWithTarget(product.id, price);
-    } catch (err) {
-      console.log(`Failed processing ${product.link}:`, err.message);
+  const browser = await launchBrowser();
+  try {
+    for (const product of products) {
+      let page;
+      try {
+        page = await openNewWebPage(browser, product.link); // open tab
+        const price = await scrapePrice(page);
+        await savePriceHistory(product.id, price);
+        await comparePriceWithTarget(product.id, price);
+        await page.close(); // close tab
+      } catch (error) {
+        console.log(`Failed processing ${product.link}:`, error.message);
+      } finally {
+        if (page) await page.close();
+      }
     }
+  } finally {
+    if (browser) browser.close();
   }
-
-  return;
+  return true;
 }
 
 async function comparePriceWithTarget(productId, price) {
