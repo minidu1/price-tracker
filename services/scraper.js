@@ -2,15 +2,13 @@ import "dotenv/config";
 import puppeteer from "puppeteer";
 
 //run the puputeer browser
-async function launchBrowser(url) {
+export async function launchBrowser() {
   try {
     const browser = await puppeteer.launch({
       executablePath: process.env.CHROME_PATH,
       // executablePath: CHROME_PATH,
     });
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "domcontentloaded" });
-    return { page, browser };
+    return browser;
   } catch (error) {
     throw new Error("Failed to launch browser", {
       cause: error,
@@ -18,13 +16,20 @@ async function launchBrowser(url) {
   }
 }
 
-export async function scrapeData(url) {
-  let browser;
+export async function openNewWebPage(browser, url) {
   try {
-    const result = await launchBrowser(url);
-    const page = result.page;
-    browser = result.browser;
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    return { page, browser };
+  } catch (error) {
+    throw new Error("Faild to open the page", { cause: error });
+  }
+}
 
+// Assumes `page` has already been navigated to the target URL via openNewWebPage().
+// Calling this on a page that hasn't navigated yet will return empty/null fields.
+export async function scrapeData(page) {
+  try {
     const name = await scrapeProductName(page);
     const description = await scrapeProductDescription(page);
     const imgUrl = await scrapeProductImgUrl(page);
@@ -38,33 +43,19 @@ export async function scrapeData(url) {
       imgUrl: null,
       error: true,
     };
-  } finally {
-    if (browser) {
-      console.log("browser closed");
-      await browser.close();
-    }
   }
 }
 
-export async function scrapePrice(url) {
-  let browser;
-  try {
-    const result = await launchBrowser(url);
-    const page = result.page;
-    browser = result.browser;
-    await page.waitForSelector(".pdp-price_type_normal", { timeout: 10000 });
-    const priceText = await page.$eval(
-      ".pdp-price_type_normal",
-      (el) => el.textContent,
-    );
-    const numericPrice = parseFloat(
-      priceText.match(/\d+(?:,\d{3})*(?:\.\d+)?/)?.[0].replace(/,/g, ""),
-    );
-    return numericPrice;
-  } finally {
-    console.log("browser closed");
-    await browser.close();
-  }
+export async function scrapePrice(page) {
+  await page.waitForSelector(".pdp-price_type_normal", { timeout: 10000 });
+  const priceText = await page.$eval(
+    ".pdp-price_type_normal",
+    (el) => el.textContent,
+  );
+  const numericPrice = parseFloat(
+    priceText.match(/\d+(?:,\d{3})*(?:\.\d+)?/)?.[0].replace(/,/g, ""),
+  );
+  return numericPrice;
 }
 
 async function scrapeProductName(page) {
