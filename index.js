@@ -13,11 +13,11 @@ const PORT = 3000;
 //   await checkAllProducts();
 // });
 
-cron.schedule("* * * * *", async () => {
-  console.log("cron ran");
+// cron.schedule("* * * * *", async () => {
+//   console.log("cron ran");
 
-  checkAllProducts();
-});
+//   await checkAllProducts();
+// });
 
 // await checkAllProducts();
 

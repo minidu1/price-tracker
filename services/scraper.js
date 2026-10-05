@@ -20,7 +20,7 @@ export async function openNewWebPage(browser, url) {
   try {
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded" });
-    return { page, browser };
+    return page;
   } catch (error) {
     throw new Error("Faild to open the page", { cause: error });
   }
@@ -59,7 +59,7 @@ export async function scrapePrice(page) {
 }
 
 async function scrapeProductName(page) {
-  try {
+
     await page.waitForSelector(".pdp-mod-product-badge-title", {
       timeout: 10000,
     });
@@ -69,10 +69,6 @@ async function scrapeProductName(page) {
     );
 
     return nameText;
-  } catch (error) {
-    console.log("Name scrape failed", error);
-    return "Unknown";
-  }
 }
 
 async function scrapeProductDescription(page) {

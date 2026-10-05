@@ -8,7 +8,7 @@ Content-Type: application/json
 {
     "name":"test",
     "password": "password",
-    "email": "test@test.com"
+    "email": ""
 }
 
 ###
@@ -16,19 +16,20 @@ POST http://localhost:3000/users/login
 Content-Type: application/json
 
 {
-    "email":"test@test.com",
+    "email":"email",
     "password": "password"
 }
 ###
 GET http://localhost:3000/products/tracked-products
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mzg4OGQ3Zi03YmRmLTQyNjMtYmRiMS01ZWEzYzYwZGZjZDUiLCJpYXQiOjE3OTA2OTQ5MjcsImV4cCI6MTc5MTI5OTcyN30.tgbm_ZfTo3Gf1jiu9hxGFziMRkaMzIq5sSYfipuQdoc
+//tesrt user
 
 ###
 POST http://localhost:3000/products
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mzg4OGQ3Zi03YmRmLTQyNjMtYmRiMS01ZWEzYzYwZGZjZDUiLCJpYXQiOjE3OTA2OTQ5MjcsImV4cCI6MTc5MTI5OTcyN30.tgbm_ZfTo3Gf1jiu9hxGFziMRkaMzIq5sSYfipuQdoc
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YmM3M2FiOS1jZTQ2LTQwYjMtOTJjYy1iMWZhMGUzYTQ1NTAiLCJpYXQiOjE3OTExMTQzNzYsImV4cCI6MTc5MTcxOTE3Nn0.xJ9ArtJWnIRPCF_5VlASznA7bN2Vb4PJrkXNUqcWCzo
 Content-Type: application/json
 
 {
-    "link": "https://www.daraz.lk/products/herbal-bliss-wild-paradise-savage-majesty-perfume-for-men-30ml-edp-long-lasting-intense-fragrance-mens-eau-de-parfum-i1768433463-s12952428080.html?c=&channelLpJumpArgs=&clickTrackInfo=query%253A%253Bnid%253A1768433463%253Bsrc%253ALazadaMainSrp%253Brn%253Ae2ee086b33174a822e381366d99b51b3%253Bregion%253Alk%253Bsku%253A1768433463_LK%253Bprice%253A2950%253Bclient%253Adesktop%253Bsupplier_id%253A1000125069961%253Bsession_id%253A%253Bbiz_source%253Ah5_pdp%253Bslot%253A9%253Butlog_bucket_id%253A470687%253Basc_category_id%253A10002064%253Bitem_id%253A1768433463%253Bsku_id%253A12952428080%253Bshop_id%253A135274%253BtemplateInfo%253A&freeshipping=0&fs_ab=1&fuse_fs=&lang=en&location=Western&price=2.95E%203&priceCompare=skuId%3A12952428080%3Bsource%3Alazada-search-voucher%3Bsn%3Ae2ee086b33174a822e381366d99b51b3%3BoriginPrice%3A295000%3BdisplayPrice%3A295000%3BisGray%3Afalse%3BsinglePromotionId%3A-1%3BsingleToolCode%3AmockedSalePrice%3BvoucherPricePlugin%3A0%3Btimestamp%3A1791104401326&ratingscore=5.0&request_id=e2ee086b33174a822e381366d99b51b3&review=8&sale=48&search=1&source=search&spm=a2a0e.searchlistcategory.list.9&stock=1",
-    "target": 2000
+    "link": "https://www.daraz.lk/products/western-digital-sn850x-1tb-2tb-4tb-wd_black-m2-2280-nvme-pcie-gen-40x4-ssd-solid-state-drives-for-gaming-computer-laptop-ps5-i403881606-s2153023336.html?",
+    "target": 100000
 }
