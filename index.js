@@ -4,9 +4,18 @@ import cron from "node-cron";
 import userRouter from "./routes/user.js";
 import productRouter from "./routes/products.js";
 import { checkAllProducts } from "./services/priceChecker.js";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+
 
 const app = express();
 app.use(express.json()); // lets Express understand JSON sent in requests
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}))
+app.use(cookieParser())
 const PORT = 3000;
 
 // cron.schedule("0 9 * * *", async () => {

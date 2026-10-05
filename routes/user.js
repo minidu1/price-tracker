@@ -60,7 +60,14 @@ router.post("/login", checkSchema(loginValidation), async (req, res) => {
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
           expiresIn: "7d",
         });
-        return res.status(200).json({ message: "Login success", token });
+
+        res.cookie("token", token, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: false,  // should have to make this true brfore deploy to use https only
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+        return res.status(200).json({ message: "Login success" });
       } else {
         return res.status(401).json({ message: `Invalid email or password` });
       }
