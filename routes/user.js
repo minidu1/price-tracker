@@ -8,6 +8,7 @@ import {
   createUserValidation,
   loginValidation,
 } from "../validation/schemas.js";
+import { authenticateToken } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -64,7 +65,7 @@ router.post("/login", checkSchema(loginValidation), async (req, res) => {
         res.cookie("token", token, {
           httpOnly: true,
           sameSite: "lax",
-          secure: false,  // should have to make this true brfore deploy to use https only
+          secure: process.env.NODE_ENV === "production", // should have to make this true brfore deploy to use https only
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         return res.status(200).json({ message: "Login success" });
@@ -79,5 +80,37 @@ router.post("/login", checkSchema(loginValidation), async (req, res) => {
     return res.status(500).json({ message: "Database error" });
   }
 });
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production", // should have to make this true brfore deploy to use https only
+  });
+  return res.status(200).json({
+    message: "Logged out successfully",
+  });
+});
+
+router.get("/me", authenticateToken, async (req , res) => {
+  try{
+  const user = await prisma.user.findUnique({
+    where:{
+      id:req.user.userId
+    },
+    select:{
+      id:true,
+      name:true,
+      email:true
+    }
+  })
+  return res.status(200).json(user)
+  }catch(error){
+    console.log(error)
+    return res.status(500).json({
+      message: "Failed to get user"
+    })
+  }
+})
 
 export default router;
