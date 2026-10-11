@@ -15,7 +15,6 @@ export const createUserValidation = {
       errorMessage:
         "Name must be at least 3 characters and at most 32 characterss",
     },
-    escape: true,
   },
   password: {
     trim: true,

@@ -23,7 +23,7 @@ router.post(
   async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      return res.status(400).json(result);
+      return res.status(400).json({ message: result.array()[0].msg });
     }
 
     let browser;
