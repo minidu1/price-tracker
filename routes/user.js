@@ -46,7 +46,7 @@ router.post("/", checkSchema(createUserValidation), async (req, res) => {
 });
 
 router.post("/login", checkSchema(loginValidation), async (req, res) => {
-  const result = validationResult(req);
+  const result = validationResult(req); // catch validation errors from req body
   if (!result.isEmpty()) {
     return res.status(400).json({ message: result.array()[0].msg });
   }
@@ -75,7 +75,14 @@ router.post("/login", checkSchema(loginValidation), async (req, res) => {
           secure: process.env.NODE_ENV === "production", // should have to make this true brfore deploy to use https only
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        return res.status(200).json({ message: "Login success" });
+        // make new user property only include name and email to render dashboard
+        return res.status(200).json({
+          message: "Login success",
+          user: {
+            name: user.name,
+            email: user.email,
+          },
+        });
       } else {
         return res.status(401).json({ message: `Invalid email or password` });
       }
@@ -103,7 +110,7 @@ router.get("/me", authenticateToken, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: req.user.userId,
+        id: req.user.userId, //get userId from cookie
       },
       select: {
         id: true,
@@ -111,7 +118,14 @@ router.get("/me", authenticateToken, async (req, res) => {
         email: true,
       },
     });
-    if (!user) return res.status(404).json({ Message: "User not found" });
+    if (!user) {
+      res.clearCookie("token", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production", // should have to make this true brfore deploy to use https only
+      });
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     return res.status(200).json(user);
   } catch (error) {
     console.log(error);
