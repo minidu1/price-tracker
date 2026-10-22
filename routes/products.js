@@ -49,7 +49,7 @@ router.post(
           error.message,
         );
       }
-      return res.status(201).json({ message: "Product added", price: price });
+      return res.status(201).json({ message: "Product added" });
     } catch (error) {
       console.log(error);
       if (error.message === "SCRAPE_FAILED") {
@@ -65,15 +65,38 @@ router.post(
 );
 
 router.get("/tracked-products", authenticateToken, async (req, res) => {
+  try{
   const products = await prisma.trackedProduct.findMany({
     where: {
       uid: req.user.userId,
     },
-    include: {
-      product: true,
-    },
+    select:{
+      id: true,
+      target:true,
+      product:{
+        select:{
+          id:true,
+          name:true,
+          picture:true,
+          priceHistory:{
+            orderBy:{
+              date:"desc",
+            },
+            take:1,
+            select:{
+              price:true,
+              date:true
+            }
+          }
+        }
+      }
+    }
   });
-  res.status(200).json(products);
+  return res.status(200).json(products);
+}
+catch{
+  res.status(500).json({message: "Internal server error"})
+}
 });
 
 export default router;
