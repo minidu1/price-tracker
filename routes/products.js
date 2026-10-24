@@ -64,39 +64,62 @@ router.post(
   },
 );
 
-router.get("/tracked-products", authenticateToken, async (req, res) => {
-  try{
-  const products = await prisma.trackedProduct.findMany({
-    where: {
-      uid: req.user.userId,
-    },
-    select:{
-      id: true,
-      target:true,
-      product:{
-        select:{
-          id:true,
-          name:true,
-          picture:true,
-          priceHistory:{
-            orderBy:{
-              date:"desc",
-            },
-            take:1,
-            select:{
-              price:true,
-              date:true
-            }
-          }
-        }
-      }
+router.delete("/tracked-products/:id", authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deleteProduct = await prisma.trackedProduct.deleteMany({
+      // find if the product id exist and it also belong to that user. so user cant delete other people's product by adding random ids
+      where: {
+        id,
+        uid: req.user.userId,
+      },
+    });
+
+    if (deleteProduct.count === 0) {
+      return res.status(404).json({ message: "Product not found" });
     }
-  });
-  return res.status(200).json(products);
-}
-catch{
-  res.status(500).json({message: "Internal server error"})
-}
+
+    return res.status(200).json({ message: "Product deleted" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Failed to delete product" });
+  }
+});
+
+router.get("/tracked-products", authenticateToken, async (req, res) => {
+  try {
+    const products = await prisma.trackedProduct.findMany({
+      where: {
+        uid: req.user.userId,
+      },
+      select: {
+        id: true,
+        target: true,
+        product: {
+          select: {
+            id: true,
+            name: true,
+            picture: true,
+            priceHistory: {
+              orderBy: {
+                date: "desc",
+              },
+              take: 1,
+              select: {
+                price: true,
+                date: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return res.status(200).json(products);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 export default router;
