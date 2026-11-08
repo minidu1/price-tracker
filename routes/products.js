@@ -12,8 +12,6 @@ import {
 } from "../services/scraper.js";
 import { savePriceHistory } from "../services/priceChecker.js";
 
-// product ekak add unama eeka ewelma tracked price run wenn onede? user ta producr eka blaganna
-
 const router = Router();
 
 router.post(
@@ -35,10 +33,9 @@ router.post(
       browser = await launchBrowser();
       const page = await openNewWebPage(browser, link);
 
-      await ensureProductExist(link, page); // check if product already in db if not create that product
+      await ensureProductExist(link, page);
       const product = await addToTrackedProduct(link, target, uid);
 
-      //add the current price to db to show the price to user
       let price = null;
       try {
         price = await scrapePrice(page);
@@ -69,7 +66,7 @@ router.delete("/tracked-products/:id", authenticateToken, async (req, res) => {
 
   try {
     const deleteProduct = await prisma.trackedProduct.deleteMany({
-      // find if the product id exist and it also belong to that user. so user cant delete other people's product by adding random ids
+      // find if the product belong to that user. so user can't delete other peoples' product by adding random ids
       where: {
         id,
         uid: req.user.userId,
@@ -119,6 +116,46 @@ router.get("/tracked-products", authenticateToken, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/tracked-products/:id", authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const uid = req.user.userId;
+  try {
+    const trackedProduct = await prisma.trackedProduct.findFirst({
+      where: {
+        id,
+        uid,
+      },
+      select: {
+        target: true,
+        product: {
+          select: {
+            link: true,
+            name: true,
+            description: true,
+            picture: true,
+            priceHistory: {
+              orderBy: {
+                date: "asc",
+              },
+              select: {
+                date: true,
+                price: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!trackedProduct)
+      return res.status(404).json({ message: "Product not found" });
+
+    return res.status(200).json(trackedProduct);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 
