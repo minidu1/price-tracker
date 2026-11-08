@@ -16,13 +16,13 @@ export async function checkAllProducts() {
     for (const product of products) {
       let page;
       try {
-        page = await openNewWebPage(browser, product.link); // open tab
+        page = await openNewWebPage(browser, product.link);
         const price = await scrapePrice(page);
         await savePriceHistory(product.id, price);
         await comparePriceWithTarget(product.id, price);
-        await page.close(); // close tab
+        await page.close();
       } catch (error) {
-        console.log(`Failed processing ${product.link}:`, error.message);
+        console.error(`Failed processing ${product.link}:`, error.message);
       } finally {
         if (page) await page.close();
       }
@@ -51,7 +51,6 @@ async function comparePriceWithTarget(productId, price) {
   for (const target of targets) {
     if (price <= target.target) {
       const email = target.user.email;
-      console.log(email);
       const emailSend = await sendNotification(
         email,
         target.product.name,
@@ -59,8 +58,6 @@ async function comparePriceWithTarget(productId, price) {
         target.target,
       );
       await updateNotifiedInDatabase(emailSend, target.id);
-    } else {
-      console.log(`price is ${price} but target is ${target.target}`);
     }
   }
 }

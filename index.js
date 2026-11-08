@@ -18,17 +18,9 @@ app.use(cors({
 app.use(cookieParser())
 const PORT = 3000;
 
-// cron.schedule("0 9 * * *", async () => {
-//   await checkAllProducts();
-// });
-
-// cron.schedule("* * * * *", async () => {
-//   console.log("cron ran");
-
-//   await checkAllProducts();
-// });
-
-// await checkAllProducts();
+cron.schedule("0 9 * * *", async () => {
+  await checkAllProducts();
+});
 
 // endpoint calls
 app.get("/", (req, res) => {

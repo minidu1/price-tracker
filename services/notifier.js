@@ -12,7 +12,7 @@ export async function sendNotification(email, productName, price, target) {
   });
 
   if (error) {
-    console.log(`Failed to send email to ${email}:`, error.message);
+    console.error(`Failed to send email to ${email}:`, error.message);
     return false;
   }
   return true;
@@ -24,10 +24,8 @@ export async function updateNotifiedInDatabase(emailSend, targetId) {
       where: { id: targetId },
       data: { notified: true },
     });
-    console.log("notified");
     return true;
   } else {
-    console.log("not sended");
     return false;
   }
 }

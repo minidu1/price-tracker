@@ -41,14 +41,14 @@ router.post(
         price = await scrapePrice(page);
         await savePriceHistory(product.productId, price);
       } catch (error) {
-        console.log(
+        console.error(
           "Initial price scrape failed, will retry on next scheduled check:",
           error.message,
         );
       }
       return res.status(201).json({ message: "Product added" });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       if (error.message === "SCRAPE_FAILED") {
         return res.status(422).json({
           message: "Couldn't retrieve product details, please try again",
@@ -79,7 +79,7 @@ router.delete("/tracked-products/:id", authenticateToken, async (req, res) => {
 
     return res.status(200).json({ message: "Product deleted" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: "Failed to delete product" });
   }
 });
@@ -114,7 +114,7 @@ router.get("/tracked-products", authenticateToken, async (req, res) => {
     });
     return res.status(200).json(products);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -154,7 +154,7 @@ router.get("/tracked-products/:id", authenticateToken, async (req, res) => {
 
     return res.status(200).json(trackedProduct);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });

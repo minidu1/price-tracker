@@ -8,4 +8,4 @@
 - [ ] https cookies secure settings should turn "true" before deploy (to only use https)
 
 ## UI
-- [ ] price  history graph
+- [x] price  history graph

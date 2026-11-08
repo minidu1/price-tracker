@@ -20,7 +20,6 @@ router.post("/", checkSchema(createUserValidation), async (req, res) => {
 
   try {
     const data = matchedData(req);
-    console.log(data);
     const { name, email, password } = data;
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -33,12 +32,12 @@ router.post("/", checkSchema(createUserValidation), async (req, res) => {
     });
     return res.status(201).json({ message: "Account created successfuly" });
   } catch (error) {
-    console.log(error);
     if (error.code === "P2002") {
       return res.status(409).json({
         message: "Email is already registered",
       });
     }
+    console.error(error);
     return res.status(500).json({
       message: "signup failed",
     });
@@ -90,7 +89,7 @@ router.post("/login", checkSchema(loginValidation), async (req, res) => {
       return res.status(401).json({ message: `Invalid email or password` });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: "Database error" });
   }
 });
@@ -110,7 +109,7 @@ router.get("/me", authenticateToken, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: req.user.userId, //get userId from cookie
+        id: req.user.userId,
       },
       select: {
         id: true,
@@ -128,7 +127,7 @@ router.get("/me", authenticateToken, async (req, res) => {
     }
     return res.status(200).json(user);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
       message: "Failed to get user",
     });
