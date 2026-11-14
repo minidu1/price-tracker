@@ -80,3 +80,17 @@ export const addNewProductValidation = {
     },
   },
 };
+
+export const updateTargetValidation = {
+  target: {
+    notEmpty: {
+      errorMessage: "Target is required",
+    },
+    isFloat: {
+      errorMessage: "Target must be a number",
+      options: {
+        min: 0,
+      },
+    },
+  },
+};

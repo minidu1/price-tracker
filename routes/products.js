@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { checkSchema, validationResult, matchedData } from "express-validator";
 import { authenticateToken } from "../middleware/auth.js";
-import { addNewProductValidation } from "../validation/schemas.js";
+import { addNewProductValidation, updateTargetValidation } from "../validation/schemas.js";
 import { prisma } from "../prismaClient.js";
 import { ensureProductExist } from "../repositories/productRepo.js";
 import { addToTrackedProduct } from "../repositories/trackedProductRepo.js";
@@ -159,6 +159,38 @@ router.get("/tracked-products/:id", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.patch("/tracked-products/:id", authenticateToken, checkSchema(updateTargetValidation) ,async (req, res) => {
+  const { id } = req.params;
+  const uid = req.user.userId;
+  const { target } = matchedData(req);
+  const result = validationResult(req)
+
+  if(!result.isEmpty()){
+    return res.status(400).json({ message: result.array()[0].msg })
+  }
+
+  try {
+    await prisma.trackedProduct.update({
+      where: {
+        id,
+        uid,
+      },
+      data: {
+        target,
+        notified: false,
+      },
+    });
+
+    return res.status(200).json({ message: "Target price updated" });
+  } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    console.error(error);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 });
 
