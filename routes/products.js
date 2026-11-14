@@ -30,11 +30,14 @@ router.post(
       const { link, target } = data;
       const uid = req.user.userId;
 
-      browser = await launchBrowser();
-      const page = await openNewWebPage(browser, link);
+      const u = new URL(link);
+      const cleanLink = u.origin + u.pathname;
 
-      await ensureProductExist(link, page);
-      const product = await addToTrackedProduct(link, target, uid);
+      browser = await launchBrowser();
+      const page = await openNewWebPage(browser, cleanLink);
+
+      await ensureProductExist(cleanLink, page);
+      const product = await addToTrackedProduct(cleanLink, target, uid);
 
       let price = null;
       try {

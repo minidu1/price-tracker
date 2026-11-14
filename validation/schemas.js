@@ -64,9 +64,9 @@ export const addNewProductValidation = {
       errorMessage: "URL is required",
     },
     isURL: {
-      errorMessage: "Please enter a valid url",
+      options: { host_whitelist: ["www.daraz.lk", "daraz.lk"] },
+      errorMessage: "Only daraz.lk product links are supported",
     },
-    
   },
   target: {
     notEmpty: {
