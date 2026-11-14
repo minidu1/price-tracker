@@ -9,3 +9,6 @@
 
 ## UI
 - [x] price  history graph
+
+## Features
+- [ ] Delete broken links automatically from databse

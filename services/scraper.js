@@ -4,10 +4,18 @@ import puppeteer from "puppeteer";
 //run the puputeer browser
 export async function launchBrowser() {
   try {
-    const browser = await puppeteer.launch({
-      executablePath: process.env.CHROME_PATH,
-    });
-    return browser;
+    const options = {
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+    };
+
+    if (process.env.CHROME_PATH) {
+      options.executablePath = process.env.CHROME_PATH;
+    }
+    return await puppeteer.launch(options);
   } catch (error) {
     throw new Error("Failed to launch browser", {
       cause: error,
@@ -57,16 +65,15 @@ export async function scrapePrice(page) {
 }
 
 async function scrapeProductName(page) {
+  await page.waitForSelector(".pdp-mod-product-badge-title", {
+    timeout: 10000,
+  });
+  const nameText = await page.$eval(
+    ".pdp-mod-product-badge-title",
+    (el) => el.textContent,
+  );
 
-    await page.waitForSelector(".pdp-mod-product-badge-title", {
-      timeout: 10000,
-    });
-    const nameText = await page.$eval(
-      ".pdp-mod-product-badge-title",
-      (el) => el.textContent,
-    );
-
-    return nameText;
+  return nameText;
 }
 
 async function scrapeProductDescription(page) {

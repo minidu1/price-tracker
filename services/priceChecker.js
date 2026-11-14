@@ -22,13 +22,15 @@ export async function checkAllProducts() {
         await comparePriceWithTarget(product.id, price);
         await page.close();
       } catch (error) {
-        console.error(`Failed processing ${product.link}:`, error.message);
+        console.error(`Failed processing ${product.link}:`, error.cause?.message);
       } finally {
-        if (page) await page.close();
+        if (page && !page.isClosed()) {
+          await page.close().catch(() => {});
+        }
       }
     }
   } finally {
-    if (browser) browser.close();
+    await browser.close().catch(() => {});
   }
   return true;
 }
