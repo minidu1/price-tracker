@@ -3,6 +3,7 @@ import express from "express";
 import cron from "node-cron";
 import userRouter from "./routes/user.js";
 import productRouter from "./routes/products.js";
+import healthRouter from "./routes/health.js"
 import { checkAllProducts } from "./services/priceChecker.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -51,6 +52,7 @@ app.get("/", (req, res) => {
 
 app.use("/users", userRouter);
 app.use("/products", productRouter);
+app.use("/health", healthRouter);
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
