@@ -1,6 +1,5 @@
 import "dotenv/config";
 import express from "express";
-import cron from "node-cron";
 import userRouter from "./routes/user.js";
 import productRouter from "./routes/products.js";
 import healthRouter from "./routes/health.js"
@@ -20,10 +19,6 @@ app.use(
 app.use(cookieParser());
 const PORT = process.env.PORT || 3000;
 
-// cron.schedule("*/8 * * * *", async () => {
-//   console.log("code runing")
-//   await checkAllProducts();
-// });
 let isRunning = false;
 
 app.post("/internal/run-check", (req, res) => {
